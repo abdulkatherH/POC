@@ -27,6 +27,20 @@ def get_db():
 
 db_dependency = Annotated[session, Depends(get_db)]
 
+@app.get("/questions/{question_id}")
+async def read_question(question_id: int, db: db_dependency):
+    result = db.query(model.Question).filter(model.Question.id == question_id).first()
+    if not result:
+        raise HTTPException(status_code=404, detail="Question is not found")
+    return result   
+
+@app.get("/choices/{question_id}")
+async def read_choices(question_id: int, db: db_dependency):
+    result = db.query(model.Choices).filter(model.Choices.question_id == question_id).all()
+    if not result:
+        raise HTTPException(status_code=404, detail="Choices is not fount")
+    return result
+
 @app.post('/questions/')
 async def create_questions(question: QuestionBase, db: db_dependency):
     db_question =  model.Question(question_text=question.question_text)
